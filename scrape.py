@@ -23,6 +23,7 @@ INFO_FILE = "INFO.txt"
 TAGS = {"div" : ("style",), "img" : ("data-lazyload", "data-srcset", "data-src", "src"),}
 
 def image_fix(img, url):
+    """Fix partial urls"""
     if img and not img.startswith("http"):
         if img.startswith("data:"):
             img = ""
@@ -35,12 +36,15 @@ def image_fix(img, url):
     return img
 
 def string_fix(string):
+    """Remove special chars"""
     return re.sub('[^a-zA-Z0-9]', '_', string)
 
 def http_fix(url):
+    """"Make sure url has http"""
     return f"http://{url}" if not url.startswith("http") else url.replace("https://", "http://")
 
 def find_attr_url(string):
+    """Find background-image url in style"""
     for part in string.split(";"):
         if "background-image" in part:
             img = re.findall("\([\"']?(.*?)[\"']?\)", part)
@@ -48,6 +52,7 @@ def find_attr_url(string):
     return ""
 
 def make_subfolder_name(info):
+    """Make website or name for folder name"""
     if info.get("first_name"):
         name = f'{info.get("first_name")} {info.get("last_name")}'
     else:
@@ -55,10 +60,11 @@ def make_subfolder_name(info):
     return string_fix(name)
 
 def make_img_name(name):
+    """Make sure image name is unique."""
     if os.path.isfile(name):
         try:
             file_name, file_ext = os.path.splitext(name)
-            for counter in range(1, 100):
+            for counter in range(1, 200):
                 name = f"{file_name}.{counter:02}{file_ext}"
                 if not os.path.isfile(name): break
         except:
@@ -66,13 +72,13 @@ def make_img_name(name):
     return name
 
 def make_folder(name):
-    """Make URL Image Folder"""
+    """Make URL image folder"""
     folder = os.path.join(ROOT_FOLDER, string_fix(name))
     if not os.path.isdir(folder): os.makedirs(folder)
     return folder
 
 def get_paths(url):
-    """Get a list of Image Src Paths from URL"""
+    """Download html from url and find urls"""
     paths = []
     url = http_fix(url)
     try:
@@ -80,7 +86,6 @@ def get_paths(url):
     except:
         print("\t-- ERROR GETTING HTML", url)
         return []
-
     for tag in TAGS:
         for image in soup.findAll(tag):
             for attr in TAGS[tag]:
@@ -92,6 +97,7 @@ def get_paths(url):
     return [p for p in paths if p]
 
 def save_info(info, folder):
+    """Save key value pairs in a file"""
     try:
         with open(os.path.join(folder, INFO_FILE), "w") as f:
             for k in info:
@@ -122,6 +128,7 @@ def download_images(images, folder):
     print(f"\t{i}/{len(images)} Images Downloaded")
 
 def loop_urls(urls):
+    """Loop list of url info"""
     i = 0
     total = len(urls)
     print()
@@ -142,7 +149,7 @@ def loop_urls(urls):
             exit()
 
 def get_csv_info(filename, delimiter="\t"):
-    """Return Array of Key/Val CSV Rows"""
+    """Read CSV and return key/val pairs"""
     info = []
     with open(filename, "r") as f:
         lines = f.readlines()
@@ -161,7 +168,7 @@ def main(parser):
         loop_urls(get_csv_info(args.csv, args.delimiter))
 
 def setup_parser():
-    """Setup Parser"""
+    """Setup parser"""
     parser = argparse.ArgumentParser(description="Web Image Scraper")
     parser.add_argument("--delimiter", "-d", \
             help="Change CSV Delimiter. TAB is default.", \
