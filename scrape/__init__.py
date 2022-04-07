@@ -23,16 +23,16 @@ TAGS = {"div" : ("style",), "img" : ("data-lazyload", "data-srcset", "data-src",
 
 def image_fix(img, url):
     """Fix partial urls"""
-    if img and not img.startswith("http"):
-        if img.startswith("data:"):
-            img = ""
-        elif img.startswith("//"):
+    if not img or not "." in os.path.basename(img) or img.startswith("data"):
+        return ""
+    if not img.startswith("http"):
+        if img.startswith("//"):
             img = f'http://{img.lstrip("/")}'
         elif img.startswith("/"):
             img = f'{url.rstrip("/")}{img}'
         else:
             img = f'{url.rstrip("/")}/{img.lstrip("/")}'
-    return img
+    return img.split("?")[0]
 
 def string_fix(string):
     """Remove special chars"""
@@ -83,7 +83,7 @@ def get_paths(url):
     try:
         soup = BeautifulSoup(requests.get(url, HEADERS).text, "html.parser")
     except:
-        print("\t-- ERROR GETTING HTML", url)
+        print("\t-XX- ERROR GETTING HTML", url)
         return []
     for tag in TAGS:
         for image in soup.findAll(tag):
@@ -95,54 +95,65 @@ def get_paths(url):
                 paths.append(image_fix(img, url))
     return [p for p in paths if p]
 
-def save_info(info, folder):
+def save_info(info, images, folder):
     """Save key value pairs in a file"""
     try:
         with open(os.path.join(folder, INFO_FILE), "w") as f:
             for k in info:
                 f.write(f'{k}:\t{info.get(k)}\n')
+            f.write("\nImages:\n")
+            for i, img in enumerate(images, 1):
+                f.write(f'{i:02})\t{img}\n')
     except:
-        print("\t-- ERROR SAVING INFO", folder)
+        print("\t-XX- ERROR SAVING INFO", folder)
+
+def list_images(images):
+    for i, img in enumerate(images, 1):
+        print(f"\t---- {i:02}) {img}")
 
 def download_images(images, folder):
     """Download and save images paths"""
-    i = 0
-    for img in images:
+    ok = 0
+    for i, img in enumerate(images, 1):
         if not img: continue
         try:
             contents = requests.get(img, HEADERS).content
         except KeyboardInterrupt:
             exit()
         except:
-            print("\t  -- ERROR GETTING IMAGE", img)
+            print(f"\t-XX- {i:02}) {img} (FAILED GETTING)")
             continue
         try:
             with open(make_img_name(os.path.join(folder, os.path.basename(img))), "wb+") as f:
                 f.write(contents)
-                i += 1
+                ok += 1
+                print(f"\t---- {i:02}) {img}")
         except KeyboardInterrupt:
             exit()
         except:
-            print("\t  -- ERROR SAVING IMAGE", img)
-    print(f"\t{i}/{len(images)} Images Downloaded")
+            print(f"\t-XX- {i:02}) {img} (FAILED SAVING)")
+    print(f"\t{ok}/{len(images)} Images Downloaded")
 
-def loop_urls(urls):
+def loop_urls(urls, just_list=False):
     """Loop list of url info"""
     i = 0
     total = len(urls)
     print()
-    print(f'--- Starting {total} Items ---')
+    print(f'--- Starting {total} Item(s) ---')
     print()
     for url in urls:
         try:
             if not url.get("website"): continue
             i += 1
-            name = make_subfolder_name(url)
-            print("+", name, f'[{i} of {total}]')
-            folder = make_folder(name)
-            save_info(url, folder)
+            print("+", url.get("first_name",""), url.get("last_name", ""), \
+                    url.get("website"), f'[{i} of {total}]')
             images = get_paths(url.get("website"))
-            download_images(images, folder)
+            if just_list:
+                list_images(images)
+            else:
+                folder = make_folder(make_subfolder_name(url))
+                save_info(url, images, folder)
+                download_images(images, folder)
             print()
         except KeyboardInterrupt:
             exit()

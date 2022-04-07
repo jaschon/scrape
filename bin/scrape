@@ -12,9 +12,9 @@ def main(parser):
     """Arg logic"""
     args = parser.parse_args()
     if args.url:
-        scrape.loop_urls([{'website': url} for url in args.url])
+        scrape.loop_urls([{'website': url} for url in args.url], args.list)
     elif args.csv:
-        scrape.loop_urls(get_csv_info(args.csv, args.delimiter))
+        scrape.loop_urls(scrape.get_csv_info(args.csv, args.delimiter), args.list)
 
 def setup_parser():
     """Setup parser"""
@@ -22,8 +22,11 @@ def setup_parser():
     parser.add_argument("--delimiter", "-d", \
             help="Change CSV Delimiter. TAB is default.", \
             default="\t", action="store")
+    parser.add_argument("--list", "-l", \
+            help="Only List Found Image Paths", \
+            default=False, action="store_true")
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--csv", "-c", "--list", "-l", \
+    group.add_argument("--csv", "-c", \
             help="Import Website List. NOTE: Needs Columns (first_name, last_name, website)", \
             action="store")
     group.add_argument("--url", "-u", "--website", "-w", \
