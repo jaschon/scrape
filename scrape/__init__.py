@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-
-"""
-Web Image Scraper
-usage: scrape.py [-h] [--delimiter DELIMITER] [--csv CSV | --url URL [URL ...]]
-"""
+"""Web Image Scaper"""
 
 from bs4 import *
 import requests
 import os
-import argparse
 import re
+
+__author__ = "Jason Rebuck"
+__copyright__ = "2022"
+__version__ = "0.05"
 
 HEADERS = {
 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9", 
@@ -158,30 +157,3 @@ def get_csv_info(filename, delimiter="\t"):
         for line in lines[1:]:
             info.append({ keys[i]: v.strip() for i, v in enumerate(line.split(delimiter)) })
     return info
-
-def main(parser):
-    """Arg logic"""
-    args = parser.parse_args()
-    if args.url:
-        loop_urls([{'website': url} for url in args.url])
-    elif args.csv:
-        loop_urls(get_csv_info(args.csv, args.delimiter))
-
-def setup_parser():
-    """Setup parser"""
-    parser = argparse.ArgumentParser(description="Web Image Scraper")
-    parser.add_argument("--delimiter", "-d", \
-            help="Change CSV Delimiter. TAB is default.", \
-            default="\t", action="store")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("--csv", "-c", "--list", "-l", \
-            help="Import Website List. NOTE: Needs Columns (first_name, last_name, website)", \
-            action="store")
-    group.add_argument("--url", "-u", "--website", "-w", \
-            help="Scrape One or More Websites", \
-            nargs="+", \
-            action="store")
-    return parser
-
-if __name__ == "__main__":
-        main(setup_parser())
