@@ -81,7 +81,7 @@ def get_paths(url):
     paths = []
     url = http_fix(url)
     try:
-        soup = BeautifulSoup(requests.get(url, HEADERS).text, "html.parser")
+        soup = BeautifulSoup(requests.get(url, headers=HEADERS, timeout=10).text, "html.parser")
     except:
         print("\t-XX- ERROR GETTING HTML", url)
         return []
@@ -117,7 +117,7 @@ def download_images(images, folder):
     for i, img in enumerate(images, 1):
         if not img: continue
         try:
-            contents = requests.get(img, HEADERS).content
+            contents = requests.get(img, headers=HEADERS, timeout=10).content
         except KeyboardInterrupt:
             exit()
         except:
