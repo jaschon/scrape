@@ -2,13 +2,16 @@
 """Web Image Scaper"""
 
 from bs4 import *
+from io import BytesIO
 import requests
 import os
 import re
+import base64
+from PIL import Image
 
 __author__ = "Jason Rebuck"
 __copyright__ = "2022"
-__version__ = "0.05"
+__version__ = "0.15"
 
 HEADERS = {
 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9", 
@@ -19,12 +22,16 @@ HEADERS = {
 
 ROOT_FOLDER = os.path.expanduser("~/Desktop/scrape")
 INFO_FILE = "INFO.txt"
-TAGS = {"div" : ("style",), "img" : ("data-lazyload", "data-srcset", "data-src", "src"),}
+TAGS = {"div" : ("style",), "source": ("src",), "img" : ("data-lazyload", "data-srcset", "data-src", "src"),}
+
+
 
 def image_fix(img, url):
     """Fix partial urls"""
-    if not img or not "." in os.path.basename(img) or img.startswith("data"):
+    if not img:
         return ""
+    if img.startswith("data"):
+        return img
     if not img.startswith("http"):
         if img.startswith("//"):
             img = f'http://{img.lstrip("/")}'
@@ -51,12 +58,8 @@ def find_attr_url(string):
     return ""
 
 def make_subfolder_name(info):
-    """Make website or name for folder name"""
-    if info.get("first_name"):
-        name = f'{info.get("first_name")} {info.get("last_name")}'
-    else:
-        name = f'{info.get("website")}'
-    return string_fix(name)
+    """Make url or name for folder name"""
+    return string_fix(info.get("url", "unknown"))
 
 def make_img_name(name):
     """Make sure image name is unique."""
@@ -107,31 +110,48 @@ def save_info(info, images, folder):
     except:
         print("\t-XX- ERROR SAVING INFO", folder)
 
+def save_image_data(data, folder):
+    """Save base64 Images"""
+    ext = re.search("^data:image\/([a-z]{3,4})", data)[1]
+    if ext:
+        img_data = re.sub('^data:image/.+;base64,', '', data)
+        img = Image.open(BytesIO(base64.b64decode(img_data)))
+        img.save(make_img_name(os.path.join(folder, f"data_image.{ext}")), \
+                ext.replace("jpg", "jpeg").upper())
+
 def list_images(images):
     for i, img in enumerate(images, 1):
-        print(f"\t---- {i:02}) {img}")
+        print(f"\t---- {i:02}) {img[:150]}")
 
 def download_images(images, folder):
     """Download and save images paths"""
     ok = 0
     for i, img in enumerate(images, 1):
         if not img: continue
-        try:
-            contents = requests.get(img, headers=HEADERS, timeout=10).content
-        except KeyboardInterrupt:
-            exit()
-        except:
-            print(f"\t-XX- {i:02}) {img} (FAILED GETTING)")
-            continue
-        try:
-            with open(make_img_name(os.path.join(folder, os.path.basename(img))), "wb+") as f:
-                f.write(contents)
+        if img.startswith("data:"):
+            try:
+                save_image_data(img, folder)
                 ok += 1
-                print(f"\t---- {i:02}) {img}")
-        except KeyboardInterrupt:
-            exit()
-        except:
-            print(f"\t-XX- {i:02}) {img} (FAILED SAVING)")
+                print(f"\t---- {i:02}) {img[:150]}")
+            except:
+                print(f"\t-XX- {i:02}) {img[:150]} (FAILED DATA)")
+        else:
+            try:
+                contents = requests.get(img, headers=HEADERS, timeout=10).content
+            except KeyboardInterrupt:
+                exit()
+            except:
+                print(f"\t-XX- {i:02}) {img} (FAILED GETTING)")
+                continue
+            try:
+                with open(make_img_name(os.path.join(folder, os.path.basename(img))), "wb+") as f:
+                    f.write(contents)
+                    ok += 1
+                    print(f"\t---- {i:02}) {img}")
+            except KeyboardInterrupt:
+                exit()
+            except:
+                print(f"\t-XX- {i:02}) {img} (FAILED SAVING)")
     print(f"\t{ok}/{len(images)} Images Downloaded")
 
 def loop_urls(urls, just_list=False):
@@ -143,11 +163,10 @@ def loop_urls(urls, just_list=False):
     print()
     for url in urls:
         try:
-            if not url.get("website"): continue
+            if not url.get("url"): continue
             i += 1
-            print("+", url.get("first_name",""), url.get("last_name", ""), \
-                    url.get("website"), f'[{i} of {total}]')
-            images = get_paths(url.get("website"))
+            print("+", url.get("url"), f'[{i} of {total}]')
+            images = get_paths(url.get("url"))
             if just_list:
                 list_images(images)
             else:

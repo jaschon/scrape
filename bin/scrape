@@ -12,7 +12,7 @@ def main(parser):
     """Arg logic"""
     args = parser.parse_args()
     if args.url:
-        scrape.loop_urls([{'website': url} for url in args.url], args.list)
+        scrape.loop_urls([{'url': url} for url in args.url], args.list)
     elif args.csv:
         scrape.loop_urls(scrape.get_csv_info(args.csv, args.delimiter), args.list)
 
@@ -27,10 +27,10 @@ def setup_parser():
             default=False, action="store_true")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--csv", "-c", \
-            help="Import Website List. NOTE: Needs Columns (first_name, last_name, website)", \
+            help="Import URL List. NOTE: Needs Column 'url'", \
             action="store")
-    group.add_argument("--url", "-u", "--website", "-w", \
-            help="Scrape One or More Websites", \
+    group.add_argument("--url", "-u", \
+            help="Scrape One or More URLs", \
             nargs="+", \
             action="store")
     return parser
