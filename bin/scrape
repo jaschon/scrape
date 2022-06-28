@@ -2,7 +2,7 @@
 
 """
 Web Image Scraper
-usage: scrape.py [-h] [--delimiter DELIMITER] [--csv CSV | --url URL [URL ...]]
+usage: scrape.py [-h] url [URL ...]]
 """
 
 import argparse
@@ -11,28 +11,12 @@ import scrape
 def main(parser):
     """Arg logic"""
     args = parser.parse_args()
-    if args.url:
-        scrape.loop_urls([{'url': url} for url in args.url], args.list)
-    elif args.csv:
-        scrape.loop_urls(scrape.get_csv_info(args.csv, args.delimiter), args.list)
+    scrape.loop_urls(args.url)
 
 def setup_parser():
     """Setup parser"""
-    parser = argparse.ArgumentParser(description="Web Image Scraper")
-    parser.add_argument("--delimiter", "-d", \
-            help="Change CSV Delimiter. TAB is default.", \
-            default="\t", action="store")
-    parser.add_argument("--list", "-l", \
-            help="Only List Found Image Paths", \
-            default=False, action="store_true")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("--csv", "-c", \
-            help="Import URL List. NOTE: Needs Column 'url'", \
-            action="store")
-    group.add_argument("--url", "-u", \
-            help="Scrape One or More URLs", \
-            nargs="+", \
-            action="store")
+    parser = argparse.ArgumentParser(description="URL Image Scraper")
+    parser.add_argument("url", help="Scrape One or More URLs", nargs="+", action="store")
     return parser
 
 if __name__ == "__main__":

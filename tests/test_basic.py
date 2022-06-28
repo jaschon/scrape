@@ -4,6 +4,8 @@ import pytest
 from bs4 import *
 from scrape import *
 
+## FIXES
+
 @pytest.mark.parametrize("img, url, expected", [
     ("", "fdafdasfsd", ""),
     ("data:image/png;ABCDEF", "fdafdafdsafd", "data:image/png;ABCDEF"),
@@ -35,7 +37,7 @@ def test_string_fix(string, expected):
 def test_http_fix(url, expected):
     assert expected == http_fix(url)
 
-
+## PATH FIND
 @pytest.mark.parametrize("string, expected", [
     ("", ""),
     ("background-image:", ""),
@@ -48,30 +50,17 @@ def test_http_fix(url, expected):
 def test_find_attr_url(string, expected):
     assert expected == find_attr_url(string)
 
-
-@pytest.mark.parametrize("info, expected", [
-    ({}, "unknown"),
-    ({'fdsafsda': 'fdasfdsafds'}, "unknown"),
-    ({'url': 'pass'}, "pass"),
-])
-def test_make_subfolder_name(info, expected):
-    assert expected == make_subfolder_name(info)
-
-
 @pytest.mark.parametrize("html, url, expected", [
     #fail
     ("", "", []),
     ("<source style='background-image: url(should_fail.jpg)'>", "fail.com", []),
-
     #pass
     ("<img src='find_me.jpg'>", "add_me.com", ['add_me.com/find_me.jpg',]),
     ("<div style='background-image: url(find_me.jpg)'>", "add_me.com", ['add_me.com/find_me.jpg',]),
     ("<source src='http://findme.com/success.jpg'>", "fail.com", ['http://findme.com/success.jpg']),
-
     #two src
     ("<img src='find_me.jpg' data-src='me_too.png'>", "add_me.com", 
         ['add_me.com/me_too.png', 'add_me.com/find_me.jpg']),
-
     #large html
     ( """
     <img src='find_me1.jpg'>
@@ -100,3 +89,18 @@ def test_search_tags(html, url, expected):
     soup = BeautifulSoup(html, "html.parser")
     paths = search_tags(soup, url)
     assert set(paths) == set(expected)
+
+## IMAGE SAVE
+
+@pytest.mark.parametrize("data, folder, expected", [
+    ("", "", False),
+])
+def test_save_image_data(data, folder, expected):
+    pass
+
+@pytest.mark.parametrize("img, folder, expected", [
+    ("", "", False),
+])
+def test_save_image_contents(img, folder, expected):
+    pass
+
