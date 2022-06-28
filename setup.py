@@ -18,5 +18,5 @@ setup(
     long_description=read('README.md'),
     install_requires=read('requirements.txt').splitlines(),
     scripts=['bin/scrape',],
-    # test_suite="tests", 
+    test_suite="tests", 
 )
