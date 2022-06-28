@@ -3,11 +3,11 @@
 
 from bs4 import *
 from io import BytesIO
+from PIL import Image
 import requests
 import os
 import re
 import base64
-from PIL import Image
 
 __author__ = "Jason Rebuck"
 __copyright__ = "2022"
