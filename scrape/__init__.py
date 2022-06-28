@@ -24,10 +24,9 @@ ROOT_FOLDER = os.path.expanduser("~/Desktop/scrape")
 INFO_FILE = "INFO.txt"
 TAGS = {"div" : ("style",), "source": ("src",), "img" : ("data-lazyload", "data-srcset", "data-src", "src"),}
 
-
-
 def image_fix(img, url):
     """Fix partial urls"""
+    #TEST test_image_fix
     if not img:
         return ""
     if img.startswith("data"):
@@ -42,14 +41,18 @@ def image_fix(img, url):
     return img.split("?")[0]
 
 def string_fix(string):
+    #TEST test_string_fix
     """Remove special chars"""
     return re.sub('[^a-zA-Z0-9]', '_', string)
 
 def http_fix(url):
+    #TEST test_http_fix
     """"Make sure url has http"""
+    if not url: return ""
     return f"http://{url}" if not url.startswith("http") else url.replace("https://", "http://")
 
 def find_attr_url(string):
+    #TEST test_find_attr_urlk
     """Find background-image url in style"""
     for part in string.split(";"):
         if "background-image" in part:
@@ -58,6 +61,7 @@ def find_attr_url(string):
     return ""
 
 def make_subfolder_name(info):
+    #TEST test_make_subfolder_name
     """Make url or name for folder name"""
     return string_fix(info.get("url", "unknown"))
 
@@ -81,13 +85,18 @@ def make_folder(name):
 
 def get_paths(url):
     """Download html from url and find urls"""
-    paths = []
     url = http_fix(url)
     try:
         soup = BeautifulSoup(requests.get(url, headers=HEADERS, timeout=10).text, "html.parser")
     except:
         print("\t-XX- ERROR GETTING HTML", url)
         return []
+    return search_tags(soup, url)
+
+def search_tags(soup, url):
+    """Search html for tags and grab paths"""
+    #TEST test_search_tags
+    paths = []
     for tag in TAGS:
         for image in soup.findAll(tag):
             for attr in TAGS[tag]:
