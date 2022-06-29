@@ -54,14 +54,11 @@ def http_fix(url):
 ## MAKE NAMES and FOLDERS
 def make_img_name(name):
     """Make sure image name is unique."""
-    if os.path.isfile(name):
-        try:
-            file_name, file_ext = os.path.splitext(name)
-            for counter in range(1, 200):
-                name = f"{file_name}.{counter:02}{file_ext}"
-                if not os.path.isfile(name): break
-        except:
-            pass
+    file_name, file_ext = os.path.splitext(name)
+    i = 0
+    while os.path.exists(name):
+        i += 1
+        name = f"{file_name}{i}{file_ext}"
     return name
 
 def make_folder(name):
@@ -87,7 +84,7 @@ def find_attr_url(string):
     #TEST test_find_attr_url
     for part in string.split(";"):
         if "background-image" in part:
-            img = re.findall("\([\"']?(.*?)[\"']?\)", part)
+            img = re.findall(r"\([\"']?(.*?)[\"']?\)", part)
             return img[0] if img else ""
     return ""
 
@@ -120,7 +117,7 @@ def save_image_data(data, folder):
     """Save base64 Images"""
     #TEST test_save_data_pass, test_save_data_fail
     try:
-        ext = re.search("^data:image\/([a-z]{3,4})", data)[1].replace("jpg","jpeg")
+        ext = re.search(r"^data:image\/([a-z]{3,4})", data)[1].replace("jpg","jpeg")
         img_data = re.sub('^data:image/.+;base64,', '', data)
         img = Image.open(BytesIO(base64.b64decode(img_data)))
         img.save(make_img_name(os.path.join(folder, f"data_image.{ext}")), ext.upper())
