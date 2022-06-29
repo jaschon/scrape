@@ -147,7 +147,6 @@ def test_save_image_contents(img):
 def test_get_paths(url, images):
     with tempfile.TemporaryDirectory() as tmp_folder:
         paths = [os.path.basename(p) for p in get_paths(url)]
-        print(paths)
         for img in images:
             assert img in paths
 
