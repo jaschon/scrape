@@ -6,12 +6,6 @@ from bs4 import *
 from scrape import *
 import tempfile
 
-## HELPERS
-def make_file(path):
-    with open(path, "w") as fs:
-        fs.write("TEST")
-
-
 ## FIXES
 
 @pytest.mark.parametrize("img, url, expected", [
