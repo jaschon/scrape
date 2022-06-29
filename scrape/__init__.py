@@ -73,6 +73,7 @@ def make_folder(name):
 ## GET PATHS
 def get_paths(url):
     """Download html from url and find urls"""
+    #TEST test_get_paths
     url = http_fix(url)
     try:
         soup = BeautifulSoup(requests.get(url, headers=HEADERS, timeout=10).text, "html.parser")
@@ -128,6 +129,8 @@ def save_image_data(data, folder):
         raise
 
 def save_image_contents(img, folder):
+    """Save image/path to file"""
+    #Test test_save_image_contents
     try:
         contents = requests.get(img, headers=HEADERS, timeout=10).content
         with open(make_img_name(os.path.join(folder, os.path.basename(img))), "wb+") as f:
