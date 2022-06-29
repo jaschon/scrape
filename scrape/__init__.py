@@ -20,7 +20,7 @@ HEADERS = {
 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36", 
 }
 
-ROOT_FOLDER = os.path.expanduser("~/Desktop/scrape")
+ROOT_FOLDER = os.path.expanduser("~/Desktop/scraped_images")
 INFO_FILE = "INFO.txt"
 TAGS = {"div" : ("style",), "source": ("src",), "img" : ("data-lazyload", "data-srcset", "data-src", "src"),}
 
@@ -119,10 +119,10 @@ def save_image_data(data, folder):
     """Save base64 Images"""
     #TEST test_save_data_pass, test_save_data_fail
     try:
-        ext = re.search("^data:image\/([a-z]{3,4})", data)[1].replace("jpg","jpeg").upper()
+        ext = re.search("^data:image\/([a-z]{3,4})", data)[1].replace("jpg","jpeg")
         img_data = re.sub('^data:image/.+;base64,', '', data)
         img = Image.open(BytesIO(base64.b64decode(img_data)))
-        img.save(make_img_name(os.path.join(folder, f"data_image.{ext}")), ext)
+        img.save(make_img_name(os.path.join(folder, f"data_image.{ext}")), ext.upper())
     except:
         print("\t-XX- ERROR SAVING DATA IMAGE", data[:150])
         raise
