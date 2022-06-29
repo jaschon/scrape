@@ -105,11 +105,11 @@ def search_tags(soup, url):
     return [p for p in paths if p]
 
 ## SAVE FILES
-def save_info(info, images, folder):
+def save_info(images, folder):
     """Save key value pairs in a file"""
+    #TEST test_save_info
     try:
         with open(os.path.join(folder, INFO_FILE), "w") as f:
-            f.write("\nImages:\n")
             for i, img in enumerate(images, 1):
                 f.write(f'{i:02})\t{img}\n')
     except:
@@ -117,17 +117,24 @@ def save_info(info, images, folder):
 
 def save_image_data(data, folder):
     """Save base64 Images"""
-    ext = re.search("^data:image\/([a-z]{3,4})", data)[1]
-    if ext:
+    #TEST test_save_data_pass, test_save_data_fail
+    try:
+        ext = re.search("^data:image\/([a-z]{3,4})", data)[1].replace("jpg","jpeg").upper()
         img_data = re.sub('^data:image/.+;base64,', '', data)
         img = Image.open(BytesIO(base64.b64decode(img_data)))
-        img.save(make_img_name(os.path.join(folder, f"data_image.{ext}")), \
-                ext.replace("jpg", "jpeg").upper())
+        img.save(make_img_name(os.path.join(folder, f"data_image.{ext}")), ext)
+    except:
+        print("\t-XX- ERROR SAVING DATA IMAGE", data[:150])
+        raise
 
 def save_image_contents(img, folder):
-    contents = requests.get(img, headers=HEADERS, timeout=10).content
-    with open(make_img_name(os.path.join(folder, os.path.basename(img))), "wb+") as f:
-        f.write(contents)
+    try:
+        contents = requests.get(img, headers=HEADERS, timeout=10).content
+        with open(make_img_name(os.path.join(folder, os.path.basename(img))), "wb+") as f:
+            f.write(contents)
+    except:
+        print("\t-XX- ERROR SAVING IMAGE", img)
+        raise
 
 ## MAIN LOOPS
 def download_images(images, folder):
@@ -140,12 +147,12 @@ def download_images(images, folder):
                 save_image_data(img, folder)
             else:
                 save_image_contents(img, folder)
-                ok += 1
+            ok += 1
             print(f"\t---- {i:02}) {img[:150]}")
         except KeyboardInterrupt:
             exit()
         except:
-            print(f"\t-XX- {i:02}) {img[:150]} (FAILED)")
+            pass
     print(f"\t{ok}/{len(images)} Images Downloaded")
 
 def loop_urls(urls):
@@ -157,7 +164,7 @@ def loop_urls(urls):
         print("+", url, f'[{i} of {len(urls)}]')
         images = get_paths(url)
         folder = make_folder(url)
-        save_info(url, images, folder)
+        save_info(images, folder)
         download_images(images, folder)
         print()
 
