@@ -127,7 +127,7 @@ def save_image_data(data, folder):
 
 def save_image_contents(img, folder):
     """Save image/path to file"""
-    #Test test_save_image_contents
+    #TEST test_save_image_contents
     try:
         contents = requests.get(img, headers=HEADERS, timeout=10).content
         with open(make_img_name(os.path.join(folder, os.path.basename(img))), "wb+") as f:

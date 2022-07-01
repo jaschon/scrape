@@ -45,6 +45,7 @@ def test_save_image_data_fail(data, ext):
 @pytest.mark.parametrize("img", [
     ("https://pypi.org/static/images/logo-small.95de8436.svg"), #svg should work
     ("http://pypi.org"), #html page should work
+    ("https://avatars.githubusercontent.com/u/1281005?v=4"), #complicated urls should work
 ])
 def test_save_image_contents(img):
     with tempfile.TemporaryDirectory() as tmp_folder:
