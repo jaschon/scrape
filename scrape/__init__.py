@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Web Image Scaper"""
 
+from threading import Thread
 from bs4 import *
 from io import BytesIO
 from PIL import Image
@@ -140,20 +141,29 @@ def save_image_contents(img, folder):
 def download_images(images, folder):
     """Download and save images paths"""
     ok = 0
+    threads = []
     for i, img in enumerate(images, 1):
         if not img: continue
         try:
-            if img.startswith("data:"):
-                save_image_data(img, folder)
-            else:
-                save_image_contents(img, folder)
-            ok += 1
-            print(f"\t---- {i:02}) {img[:150]}")
+            t = Thread(target=download_thread, args=(i, img, folder))
+            threads.append(t)
+            t.start()
         except KeyboardInterrupt:
             exit()
         except:
             pass
+    for t in threads:
+        t.join()
+        ok += 1
     print(f"\t{ok}/{len(images)} Images Downloaded")
+
+
+def download_thread(i, img, folder):
+    if img.startswith("data:"):
+        save_image_data(img, folder)
+    else:
+        save_image_contents(img, folder)
+    print(f"\t---- {i:02}) {img[:150]}")
 
 def loop_urls(urls):
     """Loop list of url info"""

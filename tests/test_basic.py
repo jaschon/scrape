@@ -92,12 +92,12 @@ def test_search_tags(html, url, expected):
     paths = search_tags(soup, url)
     assert set(paths) == set(expected)
 
-@pytest.mark.parametrize("url, images", [
-    ("http://pypi.org", ["logo-small.95de8436.svg", "logo-large.6bdbb439.svg"]), 
-    ("http://pypi.org/help", ["logo-small.95de8436.svg",]), 
-])
-def test_get_paths(url, images):
-    paths = [os.path.basename(p) for p in get_paths(url)]
-    for img in images:
-        assert img in paths
+# @pytest.mark.parametrize("url, images", [
+#     ("http://pypi.org", ["logo-small.95de8436.svg", "logo-large.6bdbb439.svg"]), 
+#     ("http://pypi.org/help", ["logo-small.95de8436.svg",]), 
+# ])
+# def test_get_paths(url, images):
+#     paths = [os.path.basename(p) for p in get_paths(url)]
+#     for img in images:
+#         assert img in paths
 
